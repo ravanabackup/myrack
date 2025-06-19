@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Number Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .output-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .output-header h3 {
+            color: #495057;
+            font-size: 1.3em;
+        }
+        
+        .copy-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .copy-btn.copied {
+            background: #17a2b8;
+        }
+        
+        .output-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-family: 'Calibri', 'Arial', sans-serif;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .output-table th {
+            background: #d9d9d9;
+            color: #333;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid #333;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .output-table td {
+            padding: 8px;
+            border: 2px solid #333;
+            text-align: center;
+            background: white;
+            font-size: 13px;
+            min-width: 80px;
+        }
+        
+        .output-table .name-cell {
+            background: #f8f8f8;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .output-table .number-cell {
+            background: white;
+            font-weight: 500;
+        }
+        
+        .output-table .rack-shelf-header {
+            background: #e6f3ff;
+            font-weight: 600;
+        }
+        
+        .output-table .rack-shelf-cell {
+            background: #e6f3ff;
+            font-weight: 600;
+            color: #0066cc;
+        }
+        
+        .info-box {
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .pattern-explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .pattern-explanation h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .pattern-explanation ul {
+            color: #856404;
+            margin-left: 20px;
+        }
+        
+        .pattern-explanation li {
+            margin: 5px 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .output-table {
+                font-size: 12px;
+            }
+            
+            .output-table th, .output-table td {
+                padding: 6px 4px;
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Excel Number Generator</h1>
+        
+        <div class="info-box">
+            <p><strong>How to use:</strong></p>
+            <p>• Enter your base number (e.g., 2382)</p>
+            <p>• Set rack and shelf numbers</p>
+            <p>• Click generate to create the pattern</p>
+            <p>• Click copy and paste directly into Excel!</p>
+        </div>
+        
+        <div class="pattern-explanation">
+            <h4>📋 Number Pattern Logic:</h4>
+            <ul>
+                <li><strong>Name1:</strong> Base number + 11, then counting down (2382 + 11 = 2393, 2392, 2391, 2390)</li>
+                <li><strong>name2:</strong> Base number + 7, then counting down (2382 + 7 = 2389, 2388, 2387, 2386)</li>
+                <li><strong>name3:</strong> Base number + 3, then counting down (2382 + 3 = 2385, 2384, 2383, 2382)</li>
+            </ul>
+        </div>
+        
+        <div class="input-group">
+            <label for="baseNumber">Base Number:</label>
+            <input type="number" id="baseNumber" placeholder="Enter base number (e.g., 2382)" min="1">
+        </div>
+        
+        <div class="row">
+            <div class="input-group">
+                <label for="rackNumber">Rack Number:</label>
+                <input type="text" id="rackNumber" placeholder="Enter rack number (e.g., 29)">
+            </div>
+            <div class="input-group">
+                <label for="shelfNumber">Shelf Number:</label>
+                <input type="text" id="shelfNumber" placeholder="Enter shelf number (e.g., 1)">
+            </div>
+        </div>
+        
+        <button class="generate-btn" onclick="generatePattern()">
+            🚀 Generate Pattern
+        </button>
+        
+        <div class="output-section hidden" id="outputSection">
+            <div class="output-header">
+                <h3>Generated Data</h3>
+                <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
+                    📋 Copy for Excel
+                </button>
+            </div>
+            
+            <table class="output-table" id="outputTable">
+                <thead>
+                    <tr>
+                        <th>L Name</th>
+                        <th>Left</th>
+                        <th>M Name</th>
+                        <th>Middle</th>
+                        <th>R Name</th>
+                        <th>Right</th>
+                        <th class="rack-shelf-header">Rack No.</th>
+                        <th class="rack-shelf-header">Shelf No.</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let generatedData = [];
+
+        function generatePattern() {
+            const baseNumber = parseInt(document.getElementById('baseNumber').value);
+            const rackNumber = document.getElementById('rackNumber').value.trim();
+            const shelfNumber = document.getElementById('shelfNumber').value.trim();
+            
+            if (!baseNumber || baseNumber < 1) {
+                alert('Please enter a valid base number');
+                return;
+            }
+            
+            if (!rackNumber || !shelfNumber) {
+                alert('Please enter both rack and shelf numbers');
+                return;
+            }
+            
+            // Generate the pattern (4 rows)
+            generatedData = [];
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            // Calculate starting numbers based on the pattern
+            const name1Start = baseNumber + 11;  // 2382 + 11 = 2393
+            const name2Start = baseNumber + 7;   // 2382 + 7 = 2389
+            const name3Start = baseNumber + 3;   // 2382 + 3 = 2385
+            
+            for (let i = 0; i < 4; i++) {
+                const row = {
+                    name1: 'Name1',
+                    number1: name1Start - i,  // 2393, 2392, 2391, 2390
+                    name2: 'Name2',
+                    number2: name2Start - i,  // 2389, 2388, 2387, 2386
+                    name3: 'Name3',
+                    number3: name3Start - i,  // 2385, 2384, 2383, 2382
+                    rackNo: rackNumber,
+                    shelfNo: shelfNumber
+                };
+                
+                generatedData.push(row);
+                
+                // Add row to table
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="name-cell">${row.name1}</td>
+                    <td class="number-cell">${row.number1}</td>
+                    <td class="name-cell">${row.name2}</td>
+                    <td class="number-cell">${row.number2}</td>
+                    <td class="name-cell">${row.name3}</td>
+                    <td class="number-cell">${row.number3}</td>
+                    <td class="rack-shelf-cell">${row.rackNo}</td>
+                    <td class="rack-shelf-cell">${row.shelfNo}</td>
+                `;
+                tableBody.appendChild(tr);
+            }
+            
+            // Show output section
+            document.getElementById('outputSection').classList.remove('hidden');
+            
+            // Reset copy button
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.textContent = '📋 Copy for Excel';
+            copyBtn.classList.remove('copied');
+        }
+
+        async function copyToClipboard() {
+            if (generatedData.length === 0) {
+                alert('Please generate data first');
+                return;
+            }
+            
+            // Create tab-separated text for Excel (matching the exact format)
+            let clipboardText = '';
+            
+            // Add header row
+            clipboardText += 'Name1\t\tname2\t\tname3\t\tRack No.\tShelf No.\n';
+            
+            // Add data rows
+            generatedData.forEach(row => {
+                clipboardText += `${row.name1}\t${row.number1}\t${row.name2}\t${row.number2}\t${row.name3}\t${row.number3}\t${row.rackNo}\t${row.shelfNo}\n`;
+            });
+            
+            try {
+                await navigator.clipboard.writeText(clipboardText);
+                
+                // Update button to show success
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.classList.add('copied');
+                
+                // Show success message
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy for Excel';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = clipboardText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    const copyBtn = document.getElementById('copyBtn');
+                    copyBtn.textContent = '✅ Copied!';
+                    copyBtn.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        copyBtn.textContent = '📋 Copy for Excel';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                } catch (fallbackErr) {
+                    document.body.removeChild(textArea);
+                    alert('Failed to copy to clipboard. Please try again or copy manually.');
+                }
+            }
+        }
+
+        // Allow Enter key to generate
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generatePattern();
+            }
+        });
+
+        // Auto-focus on the base number input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('baseNumber').focus();
+        });
+    </script>
+</body>
+</html>
