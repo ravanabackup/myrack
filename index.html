@@ -11,32 +11,100 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #555;
+            --input-bg: white;
+            --input-border: #e1e5e9;
+            --input-focus: #667eea;
+            --table-bg: white;
+            --table-header: #d9d9d9;
+            --table-border: #333;
+            --name-cell-bg: #f8f8f8;
+            --rack-shelf-bg: #e6f3ff;
+            --rack-shelf-color: #0066cc;
+            --output-section-bg: #f8f9fa;
+            --output-section-border: #e9ecef;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+        }
+        
+        [data-theme="dark"] {
+            --bg-gradient-start: #2c3e50;
+            --bg-gradient-end: #34495e;
+            --container-bg: rgba(44, 62, 80, 0.95);
+            --text-primary: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --input-bg: #34495e;
+            --input-border: #4a5f7a;
+            --input-focus: #667eea;
+            --table-bg: #2c3e50;
+            --table-header: #34495e;
+            --table-border: #4a5f7a;
+            --name-cell-bg: #34495e;
+            --rack-shelf-bg: #3d5a80;
+            --rack-shelf-color: #74c0fc;
+            --output-section-bg: #2c3e50;
+            --output-section-border: #4a5f7a;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
             padding: 20px;
+            transition: all 0.3s ease;
         }
         
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--container-bg);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
         }
         
         h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+            color: var(--text-primary);
             font-size: 2.5em;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, var(--bg-gradient-start), var(--bg-gradient-end));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        
+        .theme-toggle {
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 25px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-toggle:hover {
+            border-color: var(--input-focus);
+            transform: translateY(-2px);
         }
         
         .input-group {
@@ -47,23 +115,24 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: var(--text-secondary);
             font-size: 1.1em;
         }
         
         input[type="number"], input[type="text"] {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e1e5e9;
+            border: 2px solid var(--input-border);
             border-radius: 10px;
             font-size: 16px;
             transition: all 0.3s ease;
-            background: white;
+            background: var(--input-bg);
+            color: var(--text-primary);
         }
         
         input[type="number"]:focus, input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--input-focus);
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
             transform: translateY(-2px);
         }
@@ -77,7 +146,7 @@
         .generate-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, var(--bg-gradient-start), var(--bg-gradient-end));
             color: white;
             border: none;
             border-radius: 12px;
@@ -102,9 +171,10 @@
         .output-section {
             margin-top: 30px;
             padding: 20px;
-            background: #f8f9fa;
+            background: var(--output-section-bg);
             border-radius: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--output-section-border);
+            transition: all 0.3s ease;
         }
         
         .output-header {
@@ -115,13 +185,13 @@
         }
         
         .output-header h3 {
-            color: #495057;
+            color: var(--text-primary);
             font-size: 1.3em;
         }
         
         .copy-btn {
             padding: 10px 20px;
-            background: #28a745;
+            background: var(--success-color);
             color: white;
             border: none;
             border-radius: 8px;
@@ -136,94 +206,151 @@
         }
         
         .copy-btn.copied {
-            background: #17a2b8;
+            background: var(--info-color);
         }
         
         .output-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: var(--table-bg);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             font-family: 'Calibri', 'Arial', sans-serif;
             font-size: 14px;
             margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
         
         .output-table th {
-            background: #d9d9d9;
-            color: #333;
+            background: var(--table-header);
+            color: var(--text-primary);
             padding: 10px 8px;
             text-align: center;
             font-weight: 600;
-            border: 2px solid #333;
+            border: 2px solid var(--table-border);
             font-size: 12px;
             white-space: nowrap;
         }
         
         .output-table td {
             padding: 8px;
-            border: 2px solid #333;
+            border: 2px solid var(--table-border);
             text-align: center;
-            background: white;
+            background: var(--table-bg);
             font-size: 13px;
             min-width: 80px;
+            color: var(--text-primary);
         }
         
-        .output-table .name-cell {
-            background: #f8f8f8;
+        /* L Name and Left columns - Blue theme */
+        .output-table .l-name-header,
+        .output-table .l-name-cell {
+            background: #e3f2fd;
+            color: #1565c0;
             font-weight: 600;
-            color: #333;
         }
         
-        .output-table .number-cell {
-            background: white;
+        .output-table .left-header,
+        .output-table .left-cell {
+            background: #e8f4fd;
+            color: #1976d2;
             font-weight: 500;
         }
         
-        .output-table .rack-shelf-header {
-            background: #e6f3ff;
+        /* M Name and Middle columns - Green theme */
+        .output-table .m-name-header,
+        .output-table .m-name-cell {
+            background: #e8f5e8;
+            color: #2e7d32;
             font-weight: 600;
         }
         
-        .output-table .rack-shelf-cell {
-            background: #e6f3ff;
+        .output-table .middle-header,
+        .output-table .middle-cell {
+            background: #f1f8e9;
+            color: #388e3c;
+            font-weight: 500;
+        }
+        
+        /* R Name and Right columns - Orange theme */
+        .output-table .r-name-header,
+        .output-table .r-name-cell {
+            background: #fff3e0;
+            color: #f57c00;
             font-weight: 600;
-            color: #0066cc;
         }
         
-        .info-box {
-            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+        .output-table .right-header,
+        .output-table .right-cell {
+            background: #fdf7f0;
+            color: #ff9800;
+            font-weight: 500;
         }
         
-        .info-box p {
-            margin: 5px 0;
-            color: #555;
+        /* Rack No. column - Purple theme */
+        .output-table .rack-header,
+        .output-table .rack-cell {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            font-weight: 600;
         }
         
-        .pattern-explanation {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+        /* Shelf No. column - Teal theme */
+        .output-table .shelf-header,
+        .output-table .shelf-cell {
+            background: #e0f2f1;
+            color: #00695c;
+            font-weight: 600;
         }
         
-        .pattern-explanation h4 {
-            color: #856404;
-            margin-bottom: 10px;
+        /* Dark mode color adjustments */
+        [data-theme="dark"] .output-table .l-name-header,
+        [data-theme="dark"] .output-table .l-name-cell {
+            background: #1a237e;
+            color: #90caf9;
         }
         
-        .pattern-explanation ul {
-            color: #856404;
-            margin-left: 20px;
+        [data-theme="dark"] .output-table .left-header,
+        [data-theme="dark"] .output-table .left-cell {
+            background: #283593;
+            color: #bbdefb;
         }
         
-        .pattern-explanation li {
-            margin: 5px 0;
+        [data-theme="dark"] .output-table .m-name-header,
+        [data-theme="dark"] .output-table .m-name-cell {
+            background: #1b5e20;
+            color: #a5d6a7;
+        }
+        
+        [data-theme="dark"] .output-table .middle-header,
+        [data-theme="dark"] .output-table .middle-cell {
+            background: #2e7d32;
+            color: #c8e6c9;
+        }
+        
+        [data-theme="dark"] .output-table .r-name-header,
+        [data-theme="dark"] .output-table .r-name-cell {
+            background: #e65100;
+            color: #ffcc02;
+        }
+        
+        [data-theme="dark"] .output-table .right-header,
+        [data-theme="dark"] .output-table .right-cell {
+            background: #f57c00;
+            color: #ffe0b2;
+        }
+        
+        [data-theme="dark"] .output-table .rack-header,
+        [data-theme="dark"] .output-table .rack-cell {
+            background: #4a148c;
+            color: #ce93d8;
+        }
+        
+        [data-theme="dark"] .output-table .shelf-header,
+        [data-theme="dark"] .output-table .shelf-cell {
+            background: #004d40;
+            color: #80cbc4;
         }
         
         .hidden {
@@ -238,6 +365,12 @@
             .container {
                 padding: 20px;
                 margin: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
             }
             
             h1 {
@@ -257,23 +390,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 Excel Number Generator</h1>
-        
-        <div class="info-box">
-            <p><strong>How to use:</strong></p>
-            <p>• Enter your base number (e.g., 2382)</p>
-            <p>• Set rack and shelf numbers</p>
-            <p>• Click generate to create the pattern</p>
-            <p>• Click copy and paste directly into Excel!</p>
-        </div>
-        
-        <div class="pattern-explanation">
-            <h4>📋 Number Pattern Logic:</h4>
-            <ul>
-                <li><strong>Name1:</strong> Base number + 11, then counting down (2382 + 11 = 2393, 2392, 2391, 2390)</li>
-                <li><strong>name2:</strong> Base number + 7, then counting down (2382 + 7 = 2389, 2388, 2387, 2386)</li>
-                <li><strong>name3:</strong> Base number + 3, then counting down (2382 + 3 = 2385, 2384, 2383, 2382)</li>
-            </ul>
+        <div class="header">
+            <h1>📊 Excel Number Generator</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="themeIcon">🌙</span>
+                <span id="themeText">Dark Mode</span>
+            </button>
         </div>
         
         <div class="input-group">
@@ -307,14 +429,14 @@
             <table class="output-table" id="outputTable">
                 <thead>
                     <tr>
-                        <th>L Name</th>
-                        <th>Left</th>
-                        <th>M Name</th>
-                        <th>Middle</th>
-                        <th>R Name</th>
-                        <th>Right</th>
-                        <th class="rack-shelf-header">Rack No.</th>
-                        <th class="rack-shelf-header">Shelf No.</th>
+                        <th class="l-name-header">L Name</th>
+                        <th class="left-header">Left</th>
+                        <th class="m-name-header">M Name</th>
+                        <th class="middle-header">Middle</th>
+                        <th class="r-name-header">R Name</th>
+                        <th class="right-header">Right</th>
+                        <th class="rack-header">Rack No.</th>
+                        <th class="shelf-header">Shelf No.</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -325,6 +447,36 @@
 
     <script>
         let generatedData = [];
+        let isDarkMode = false;
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (isDarkMode) {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                isDarkMode = false; // Set to false so toggleTheme() will make it true
+                toggleTheme();
+            }
+        }
 
         function generatePattern() {
             const baseNumber = parseInt(document.getElementById('baseNumber').value);
@@ -368,14 +520,14 @@
                 // Add row to table
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="name-cell">${row.name1}</td>
-                    <td class="number-cell">${row.number1}</td>
-                    <td class="name-cell">${row.name2}</td>
-                    <td class="number-cell">${row.number2}</td>
-                    <td class="name-cell">${row.name3}</td>
-                    <td class="number-cell">${row.number3}</td>
-                    <td class="rack-shelf-cell">${row.rackNo}</td>
-                    <td class="rack-shelf-cell">${row.shelfNo}</td>
+                    <td class="l-name-cell">${row.name1}</td>
+                    <td class="left-cell">${row.number1}</td>
+                    <td class="m-name-cell">${row.name2}</td>
+                    <td class="middle-cell">${row.number2}</td>
+                    <td class="r-name-cell">${row.name3}</td>
+                    <td class="right-cell">${row.number3}</td>
+                    <td class="rack-cell">${row.rackNo}</td>
+                    <td class="shelf-cell">${row.shelfNo}</td>
                 `;
                 tableBody.appendChild(tr);
             }
@@ -395,11 +547,11 @@
                 return;
             }
             
-            // Create tab-separated text for Excel (matching the exact format)
+            // Create tab-separated text for Excel matching the Generated Data table format
             let clipboardText = '';
             
-            // Add header row
-            clipboardText += 'Name1\t\tname2\t\tname3\t\tRack No.\tShelf No.\n';
+            // Add header row (matching the table headers exactly)
+            clipboardText += 'L Name\tLeft\tM Name\tMiddle\tR Name\tRight\tRack No.\tShelf No.\n';
             
             // Add data rows
             generatedData.forEach(row => {
@@ -454,9 +606,10 @@
             }
         });
 
-        // Auto-focus on the base number input
+        // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('baseNumber').focus();
+            loadTheme();
         });
     </script>
 </body>
