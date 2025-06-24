@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serial Number Totaler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .table-container {
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+        }
+        
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+        }
+        
+        td:last-child {
+            border-right: none;
+        }
+        
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        
+        .total-cell {
+            background-color: #f9f9f9;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .grand-total-row {
+            background-color: #e8f5e8;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .grand-total-row td {
+            border-bottom: none;
+            padding: 15px;
+        }
+        
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Serial Number Totaler</h1>
+        
+        <div class="table-container">
+            <table id="serialTable">
+                <thead>
+                    <tr>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr data-row="1">
+                        <td>
+                            <input type="number" class="start-input" placeholder="Start" onchange="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)">
+                        </td>
+                        <td>
+                            <input type="number" class="end-input" placeholder="End" onchange="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)">
+                        </td>
+                        <td class="total-cell">
+                            <span class="total-value">0</span>
+                        </td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteRow(1)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="grand-total-row">
+                        <td colspan="2"><strong>Grand Total</strong></td>
+                        <td><strong><span id="grandTotal">0</span></strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div class="btn-container">
+            <button class="add-btn" onclick="addRow()">+ Add Row</button>
+        </div>
+    </div>
+
+    <script>
+        let rowCounter = 1;
+
+        function handleKeyPress(event, rowId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addRow();
+                // Focus on the first input of the new row
+                setTimeout(() => {
+                    const newRow = document.querySelector(`tr[data-row="${rowCounter}"]`);
+                    if (newRow) {
+                        newRow.querySelector('.start-input').focus();
+                    }
+                }, 10);
+            } else if (event.key === 'Delete') {
+                event.preventDefault();
+                deleteRow(rowId);
+            }
+        }
+
+        function calculateTotal(rowId) {
+            const row = document.querySelector(`tr[data-row="${rowId}"]`);
+            const startInput = row.querySelector('.start-input');
+            const endInput = row.querySelector('.end-input');
+            const totalSpan = row.querySelector('.total-value');
+            
+            const start = parseInt(startInput.value) || 0;
+            const endValue = endInput.value.trim();
+            const end = parseInt(endValue) || 0;
+            
+            let total = 0;
+            if (start > 0) {
+                if (endValue === '' || end === 0) {
+                    // If end is blank or 0, count as 1
+                    total = 1;
+                } else if (end >= start) {
+                    // Normal calculation
+                    total = end - start + 1;
+                }
+            }
+            
+            totalSpan.textContent = total;
+            updateGrandTotal();
+        }
+
+        function updateGrandTotal() {
+            const totalSpans = document.querySelectorAll('.total-value');
+            let grandTotal = 0;
+            
+            totalSpans.forEach(span => {
+                grandTotal += parseInt(span.textContent) || 0;
+            });
+            
+            document.getElementById('grandTotal').textContent = grandTotal;
+        }
+
+        function addRow() {
+            rowCounter++;
+            const tbody = document.getElementById('tableBody');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-row', rowCounter);
+            
+            newRow.innerHTML = `
+                <td>
+                    <input type="number" class="start-input" placeholder="Start" onchange="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})">
+                </td>
+                <td>
+                    <input type="number" class="end-input" placeholder="End" onchange="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})">
+                </td>
+                <td class="total-cell">
+                    <span class="total-value">0</span>
+                </td>
+                <td>
+                    <button class="delete-btn" onclick="deleteRow(${rowCounter})">Delete</button>
+                </td>
+            `;
+            
+            tbody.appendChild(newRow);
+        }
+
+        function deleteRow(rowId) {
+            const row = document.querySelector(`tr[data-row="${rowId}"]`);
+            if (row) {
+                row.remove();
+                updateGrandTotal();
+            }
+            
+            // Prevent deleting the last row
+            const remainingRows = document.querySelectorAll('#tableBody tr');
+            if (remainingRows.length === 0) {
+                addRow();
+            }
+        }
+
+        // Initialize empty for user input
+        window.onload = function() {
+            // Start with just one empty row
+            updateGrandTotal();
+        };
+    </script>
+</body>
+</html>
