@@ -5,29 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serial Number Totaler</title>
     <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --container-bg: white;
+            --text-color: #333;
+            --border-color: #333;
+            --input-border: #ddd;
+            --header-bg: #4CAF50;
+            --total-bg: #f9f9f9;
+            --grand-total-bg: #e8f5e8;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #555;
+            --input-border: #555;
+            --header-bg: #2e7d32;
+            --total-bg: #3a3a3a;
+            --grand-total-bg: #2e4a2e;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         
         .container {
-            background: white;
+            background: var(--container-bg);
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow);
+            transition: background-color 0.3s;
         }
         
-        h1 {
-            text-align: center;
-            color: #333;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
         }
         
+        h1 {
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .theme-toggle {
+            background: var(--header-bg);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            opacity: 0.9;
+        }
+        
+        .reset-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .reset-btn:hover {
+            background-color: #f57c00;
+        }
+        
         .table-container {
-            border: 2px solid #333;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 20px;
@@ -36,23 +104,23 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: var(--container-bg);
         }
         
         th {
-            background-color: #4CAF50;
+            background-color: var(--header-bg);
             color: white;
             padding: 12px;
             text-align: center;
             font-weight: bold;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid var(--border-color);
         }
         
         td {
             padding: 10px;
             text-align: center;
-            border-bottom: 1px solid #ddd;
-            border-right: 1px solid #ddd;
+            border-bottom: 1px solid var(--input-border);
+            border-right: 1px solid var(--input-border);
         }
         
         td:last-child {
@@ -62,10 +130,13 @@
         input[type="number"] {
             width: 80px;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--input-border);
             border-radius: 4px;
             text-align: center;
             font-size: 14px;
+            background: var(--container-bg);
+            color: var(--text-color);
+            transition: all 0.3s;
         }
         
         input[type="number"]:focus {
@@ -75,13 +146,13 @@
         }
         
         .total-cell {
-            background-color: #f9f9f9;
+            background-color: var(--total-bg);
             font-weight: bold;
-            color: #333;
+            color: var(--text-color);
         }
         
         .grand-total-row {
-            background-color: #e8f5e8;
+            background-color: var(--grand-total-bg);
             font-weight: bold;
             font-size: 16px;
         }
@@ -123,11 +194,29 @@
         .btn-container {
             text-align: center;
         }
+
+        .keyboard-hint {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        [data-theme="dark"] .keyboard-hint {
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Serial Number Totaler</h1>
+        <div class="header">
+            <h1>Serial Number Totaler</h1>
+            <div class="controls">
+                <button class="reset-btn" onclick="resetAll()">Reset All</button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+            </div>
+        </div>
         
         <div class="table-container">
             <table id="serialTable">
@@ -142,10 +231,10 @@
                 <tbody id="tableBody">
                     <tr data-row="1">
                         <td>
-                            <input type="number" class="start-input" placeholder="Start" onchange="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)">
+                            <input type="number" class="start-input" placeholder="Start" onchange="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)" data-row="1" data-col="0">
                         </td>
                         <td>
-                            <input type="number" class="end-input" placeholder="End" onchange="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)">
+                            <input type="number" class="end-input" placeholder="End" onchange="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)" data-row="1" data-col="1">
                         </td>
                         <td class="total-cell">
                             <span class="total-value">0</span>
@@ -168,25 +257,88 @@
         <div class="btn-container">
             <button class="add-btn" onclick="addRow()">+ Add Row</button>
         </div>
+        
+        <div class="keyboard-hint">
+            Use arrow keys to navigate • Enter to add row • Delete to remove row • Escape to clear current input
+        </div>
     </div>
 
     <script>
         let rowCounter = 1;
+        let currentTheme = 'light';
 
         function handleKeyPress(event, rowId) {
+            const currentInput = event.target;
+            const currentRow = parseInt(currentInput.getAttribute('data-row') || rowId);
+            const currentCol = parseInt(currentInput.getAttribute('data-col') || (currentInput.classList.contains('start-input') ? 0 : 1));
+
             if (event.key === 'Enter') {
                 event.preventDefault();
                 addRow();
-                // Focus on the first input of the new row
                 setTimeout(() => {
                     const newRow = document.querySelector(`tr[data-row="${rowCounter}"]`);
                     if (newRow) {
                         newRow.querySelector('.start-input').focus();
                     }
                 }, 10);
-            } else if (event.key === 'Delete') {
+            } else if (event.key === 'Delete' && event.ctrlKey) {
                 event.preventDefault();
                 deleteRow(rowId);
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                currentInput.value = '';
+                calculateTotal(rowId);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                navigateToCell(currentRow - 1, currentCol);
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                navigateToCell(currentRow + 1, currentCol);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                navigateToCell(currentRow, currentCol - 1);
+            } else if (event.key === 'ArrowRight' || event.key === 'Tab') {
+                if (event.key === 'Tab') event.preventDefault();
+                navigateToCell(currentRow, currentCol + 1);
+            }
+        }
+
+        function navigateToCell(targetRow, targetCol) {
+            // Clamp column to valid range (0-1)
+            targetCol = Math.max(0, Math.min(1, targetCol));
+            
+            // Find the target input
+            let targetInput;
+            
+            // First try to find exact row
+            let row = document.querySelector(`tr[data-row="${targetRow}"]`);
+            
+            if (!row) {
+                // If target row doesn't exist, find closest valid row
+                const allRows = Array.from(document.querySelectorAll('#tableBody tr[data-row]'));
+                if (allRows.length === 0) return;
+                
+                const rowNumbers = allRows.map(r => parseInt(r.getAttribute('data-row'))).sort((a, b) => a - b);
+                
+                if (targetRow < rowNumbers[0]) {
+                    targetRow = rowNumbers[0];
+                } else if (targetRow > rowNumbers[rowNumbers.length - 1]) {
+                    targetRow = rowNumbers[rowNumbers.length - 1];
+                } else {
+                    // Find closest existing row
+                    targetRow = rowNumbers.reduce((prev, curr) => 
+                        Math.abs(curr - targetRow) < Math.abs(prev - targetRow) ? curr : prev
+                    );
+                }
+                
+                row = document.querySelector(`tr[data-row="${targetRow}"]`);
+            }
+            
+            if (row) {
+                const inputs = row.querySelectorAll('input[type="number"]');
+                if (inputs[targetCol]) {
+                    inputs[targetCol].focus();
+                }
             }
         }
 
@@ -203,10 +355,8 @@
             let total = 0;
             if (start > 0) {
                 if (endValue === '' || end === 0) {
-                    // If end is blank or 0, count as 1
                     total = 1;
                 } else if (end >= start) {
-                    // Normal calculation
                     total = end - start + 1;
                 }
             }
@@ -234,10 +384,10 @@
             
             newRow.innerHTML = `
                 <td>
-                    <input type="number" class="start-input" placeholder="Start" onchange="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})">
+                    <input type="number" class="start-input" placeholder="Start" onchange="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})" data-row="${rowCounter}" data-col="0">
                 </td>
                 <td>
-                    <input type="number" class="end-input" placeholder="End" onchange="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})">
+                    <input type="number" class="end-input" placeholder="End" onchange="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})" data-row="${rowCounter}" data-col="1">
                 </td>
                 <td class="total-cell">
                     <span class="total-value">0</span>
@@ -257,17 +407,68 @@
                 updateGrandTotal();
             }
             
-            // Prevent deleting the last row
             const remainingRows = document.querySelectorAll('#tableBody tr');
             if (remainingRows.length === 0) {
                 addRow();
             }
         }
 
-        // Initialize empty for user input
+        function resetAll() {
+            if (confirm('Are you sure you want to reset all values?')) {
+                const inputs = document.querySelectorAll('input[type="number"]');
+                inputs.forEach(input => {
+                    input.value = '';
+                });
+                
+                const totalSpans = document.querySelectorAll('.total-value');
+                totalSpans.forEach(span => {
+                    span.textContent = '0';
+                });
+                
+                updateGrandTotal();
+                
+                // Focus on first input
+                const firstInput = document.querySelector('.start-input');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+            
+            if (currentTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                button.innerHTML = '☀️ Light';
+                currentTheme = 'dark';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.removeAttribute('data-theme');
+                button.innerHTML = '🌙 Dark';
+                currentTheme = 'light';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Initialize theme and empty state
         window.onload = function() {
-            // Start with just one empty row
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle').innerHTML = '☀️ Light';
+                currentTheme = 'dark';
+            }
+            
             updateGrandTotal();
+            
+            // Focus on first input
+            const firstInput = document.querySelector('.start-input');
+            if (firstInput) {
+                firstInput.focus();
+            }
         };
     </script>
 </body>
