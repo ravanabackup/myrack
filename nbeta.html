@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Number Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #555;
+            --input-bg: white;
+            --input-border: #e1e5e9;
+            --input-focus: #667eea;
+            --table-bg: white;
+            --table-header: #d9d9d9;
+            --table-border: #333;
+            --name-cell-bg: #f8f8f8;
+            --rack-shelf-bg: #e6f3ff;
+            --rack-shelf-color: #0066cc;
+            --output-section-bg: #f8f9fa;
+            --output-section-border: #e9ecef;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+        }
+        
+        [data-theme="dark"] {
+            --bg-gradient-start: #2c3e50;
+            --bg-gradient-end: #34495e;
+            --container-bg: rgba(44, 62, 80, 0.95);
+            --text-primary: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --input-bg: #34495e;
+            --input-border: #4a5f7a;
+            --input-focus: #667eea;
+            --table-bg: #2c3e50;
+            --table-header: #34495e;
+            --table-border: #4a5f7a;
+            --name-cell-bg: #34495e;
+            --rack-shelf-bg: #3d5a80;
+            --rack-shelf-color: #74c0fc;
+            --output-section-bg: #2c3e50;
+            --output-section-border: #4a5f7a;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.5em;
+            background: linear-gradient(45deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .theme-toggle {
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 25px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-toggle:hover {
+            border-color: var(--input-focus);
+            transform: translateY(-2px);
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+        
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        .global-name-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid var(--input-border);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="dark"] .global-name-section {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        }
+        
+        .global-name-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .output-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--output-section-bg);
+            border-radius: 12px;
+            border: 2px solid var(--output-section-border);
+            transition: all 0.3s ease;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .output-header h3 {
+            color: var(--text-primary);
+            font-size: 1.3em;
+        }
+        
+        .copy-btn {
+            padding: 10px 20px;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .copy-btn.copied {
+            background: var(--info-color);
+        }
+        
+        .output-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--table-bg);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-family: 'Calibri', 'Arial', sans-serif;
+            font-size: 14px;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .output-table th {
+            background: var(--table-header);
+            color: var(--text-primary);
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid var(--table-border);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .output-table td {
+            padding: 8px;
+            border: 2px solid var(--table-border);
+            text-align: center;
+            background: var(--table-bg);
+            font-size: 13px;
+            min-width: 80px;
+            color: var(--text-primary);
+        }
+        
+        /* L Name and Left columns - Blue theme */
+        .output-table .l-name-header,
+        .output-table .l-name-cell {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-weight: 600;
+        }
+        
+        .output-table .left-header,
+        .output-table .left-cell {
+            background: #e8f4fd;
+            color: #1976d2;
+            font-weight: 500;
+        }
+        
+        /* M Name and Middle columns - Green theme */
+        .output-table .m-name-header,
+        .output-table .m-name-cell {
+            background: #e8f5e8;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        
+        .output-table .middle-header,
+        .output-table .middle-cell {
+            background: #f1f8e9;
+            color: #388e3c;
+            font-weight: 500;
+        }
+        
+        /* R Name and Right columns - Orange theme */
+        .output-table .r-name-header,
+        .output-table .r-name-cell {
+            background: #fff3e0;
+            color: #f57c00;
+            font-weight: 600;
+        }
+        
+        .output-table .right-header,
+        .output-table .right-cell {
+            background: #fdf7f0;
+            color: #ff9800;
+            font-weight: 500;
+        }
+        
+        /* Rack No. column - Purple theme */
+        .output-table .rack-header,
+        .output-table .rack-cell {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            font-weight: 600;
+        }
+        
+        /* Shelf No. column - Teal theme */
+        .output-table .shelf-header,
+        .output-table .shelf-cell {
+            background: #e0f2f1;
+            color: #00695c;
+            font-weight: 600;
+        }
+        
+        /* Dark mode color adjustments */
+        [data-theme="dark"] .output-table .l-name-header,
+        [data-theme="dark"] .output-table .l-name-cell {
+            background: #1a237e;
+            color: #90caf9;
+        }
+        
+        [data-theme="dark"] .output-table .left-header,
+        [data-theme="dark"] .output-table .left-cell {
+            background: #283593;
+            color: #bbdefb;
+        }
+        
+        [data-theme="dark"] .output-table .m-name-header,
+        [data-theme="dark"] .output-table .m-name-cell {
+            background: #1b5e20;
+            color: #a5d6a7;
+        }
+        
+        [data-theme="dark"] .output-table .middle-header,
+        [data-theme="dark"] .output-table .middle-cell {
+            background: #2e7d32;
+            color: #c8e6c9;
+        }
+        
+        [data-theme="dark"] .output-table .r-name-header,
+        [data-theme="dark"] .output-table .r-name-cell {
+            background: #e65100;
+            color: #ffcc02;
+        }
+        
+        [data-theme="dark"] .output-table .right-header,
+        [data-theme="dark"] .output-table .right-cell {
+            background: #f57c00;
+            color: #ffe0b2;
+        }
+        
+        [data-theme="dark"] .output-table .rack-header,
+        [data-theme="dark"] .output-table .rack-cell {
+            background: #4a148c;
+            color: #ce93d8;
+        }
+        
+        [data-theme="dark"] .output-table .shelf-header,
+        [data-theme="dark"] .output-table .shelf-cell {
+            background: #004d40;
+            color: #80cbc4;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .output-table {
+                font-size: 12px;
+            }
+            
+            .output-table th, .output-table td {
+                padding: 6px 4px;
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Excel Number Generator</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="themeIcon">🌙</span>
+                <span id="themeText">Dark Mode</span>
+            </button>
+        </div>
+        
+        <div class="global-name-section">
+            <h3>👤 Global Name Selector</h3>
+            <div class="input-group">
+                <label for="globalNameSelect">Select Name for All Columns:</label>
+                <select id="globalNameSelect" onchange="setGlobalName()">
+                    <option value="">-- Select a Name --</option>
+                    <option value="Kuldeep">Kuldeep</option>
+                    <option value="Pooja Mam">Pooja Mam</option>
+                    <option value="Vandana Mam">Vandana Mam</option>
+                    <option value="Sajin">Sajin</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="baseNumber">Base Number:</label>
+            <input type="number" id="baseNumber" placeholder="Enter base number (e.g., 2382)" min="1">
+        </div>
+        
+        <div class="row">
+            <div class="input-group">
+                <label for="rackNumber">Rack Number:</label>
+                <input type="text" id="rackNumber" placeholder="Enter rack number (e.g., 29)">
+            </div>
+            <div class="input-group">
+                <label for="shelfNumber">Shelf Number:</label>
+                <input type="text" id="shelfNumber" placeholder="Enter shelf number (e.g., 1)">
+            </div>
+        </div>
+        
+        <button class="generate-btn" onclick="generatePattern()">
+            🚀 Generate Pattern
+        </button>
+        
+        <button class="generate-btn" onclick="generateNext()">
+    ➡️ Next
+</button>
+        
+        <div class="output-section hidden" id="outputSection">
+            <div class="output-header">
+                <h3>Generated Data</h3>
+                <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
+                    📋 Copy for Excel
+                </button>
+            </div>
+            
+            <table class="output-table" id="outputTable">
+                <thead>
+                    <tr>
+                        <th class="l-name-header">L Name</th>
+                        <th class="left-header">Left</th>
+                        <th class="m-name-header">M Name</th>
+                        <th class="middle-header">Middle</th>
+                        <th class="r-name-header">R Name</th>
+                        <th class="right-header">Right</th>
+                        <th class="rack-header">Rack No.</th>
+                        <th class="shelf-header">Shelf No.</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    let generatedData = [];
+    let isDarkMode = false;
+    let selectedGlobalName = '';
+
+    function toggleTheme() {
+        isDarkMode = !isDarkMode;
+        const body = document.body;
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+
+        if (isDarkMode) {
+            body.setAttribute('data-theme', 'dark');
+            themeIcon.textContent = '☀️';
+            themeText.textContent = 'Light Mode';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.removeAttribute('data-theme');
+            themeIcon.textContent = '🌙';
+            themeText.textContent = 'Dark Mode';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            isDarkMode = false;
+            toggleTheme();
+        }
+    }
+
+    function setGlobalName() {
+        const select = document.getElementById('globalNameSelect');
+        selectedGlobalName = select.value;
+        if (generatedData.length > 0) {
+            generatePattern();
+        }
+    }
+
+    function generatePattern() {
+        const baseNumber = parseInt(document.getElementById('baseNumber').value);
+        const rackNumber = document.getElementById('rackNumber').value.trim();
+        const shelfNumber = document.getElementById('shelfNumber').value.trim();
+
+        if (!baseNumber || baseNumber < 1) {
+            alert('Please enter a valid base number');
+            return;
+        }
+
+        if (!rackNumber || !shelfNumber) {
+            alert('Please enter both rack and shelf numbers');
+            return;
+        }
+
+        const name1 = selectedGlobalName || 'Name1';
+        const name2 = selectedGlobalName || 'Name2';
+        const name3 = selectedGlobalName || 'Name3';
+
+        generatedData = [];
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';
+
+        const name1Start = baseNumber + 11;
+        const name2Start = baseNumber + 7;
+        const name3Start = baseNumber + 3;
+
+        for (let i = 0; i < 4; i++) {
+            const row = {
+                name1: name1,
+                number1: name1Start - i,
+                name2: name2,
+                number2: name2Start - i,
+                name3: name3,
+                number3: name3Start - i,
+                rackNo: rackNumber,
+                shelfNo: shelfNumber
+            };
+
+            generatedData.push(row);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="l-name-cell">${row.name1}</td>
+                <td class="left-cell">${row.number1}</td>
+                <td class="m-name-cell">${row.name2}</td>
+                <td class="middle-cell">${row.number2}</td>
+                <td class="r-name-cell">${row.name3}</td>
+                <td class="right-cell">${row.number3}</td>
+                <td class="rack-cell">${row.rackNo}</td>
+                <td class="shelf-cell">${row.shelfNo}</td>
+            `;
+            tableBody.appendChild(tr);
+        }
+
+        document.getElementById('outputSection').classList.remove('hidden');
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.textContent = '📋 Copy for Excel';
+        copyBtn.classList.remove('copied');
+    }
+
+    async function copyToClipboard() {
+        if (generatedData.length === 0) {
+            alert('Please generate data first');
+            return;
+        }
+
+        let clipboardText = 'L Name\tLeft\tM Name\tMiddle\tR Name\tRight\tRack No.\tShelf No.\n';
+
+        generatedData.forEach(row => {
+            clipboardText += `${row.name1}\t${row.number1}\t${row.name2}\t${row.number2}\t${row.name3}\t${row.number3}\t${row.rackNo}\t${row.shelfNo}\n`;
+        });
+
+        try {
+            await navigator.clipboard.writeText(clipboardText);
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.textContent = '✅ Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+                copyBtn.textContent = '📋 Copy for Excel';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            const textArea = document.createElement('textarea');
+            textArea.value = clipboardText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy for Excel';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (fallbackErr) {
+                document.body.removeChild(textArea);
+                alert('Failed to copy. Please try again.');
+            }
+        }
+    }
+
+    // ✅ NEXT BUTTON LOGIC — shelf wraps at 6, rack+1 when shelf resets, name resets
+    function generateNext() {
+        const baseInput = document.getElementById('baseNumber');
+        const shelfInput = document.getElementById('shelfNumber');
+        const rackInput = document.getElementById('rackNumber');
+        const globalNameSelect = document.getElementById('globalNameSelect');
+
+        let base = parseInt(baseInput.value);
+        let shelf = parseInt(shelfInput.value);
+        let rack = parseInt(rackInput.value);
+
+        if (isNaN(base) || isNaN(shelf) || isNaN(rack)) {
+            alert('Please fill Base, Rack, and Shelf numbers correctly before clicking Next');
+            return;
+        }
+
+        // Increment shelf and wrap
+        shelf += 1;
+        if (shelf > 6) {
+            shelf = 1;
+            rack += 1;
+        }
+
+        base += 12;
+
+        baseInput.value = base;
+        shelfInput.value = shelf;
+        rackInput.value = rack;
+
+        // Reset name
+        globalNameSelect.value = '';
+        selectedGlobalName = '';
+
+        generatePattern();
+    }
+
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            generatePattern();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('baseNumber').focus();
+        loadTheme();
+    });
+</script>
+
+</body>
+</html>
