@@ -421,7 +421,7 @@
             <h1>📊 Excel Number Generator</h1>
             <button class="theme-toggle" onclick="toggleTheme()">
                 <span id="themeIcon">🌙</span>
-                <span id="themeText">Dark Mode</span>
+                <span id="themeText"></span>
             </button>
         </div>
         
@@ -434,14 +434,15 @@
                     <option value="Kuldeep">Kuldeep</option>
                     <option value="Pooja Mam">Pooja Mam</option>
                     <option value="Vandana Mam">Vandana Mam</option>
-                    <option value="Sajin">Sajin</option>
+                    <option value="Arti Mam">Arti Mam</option>
+                    <option value="Sajin">Sajin 😎</option>
                 </select>
             </div>
         </div>
         
         <div class="input-group">
-            <label for="baseNumber">Base Number:</label>
-            <input type="number" id="baseNumber" placeholder="Enter base number (e.g., 2382)" min="1">
+            <label for="baseNumber">Bundle Number:</label>
+            <input type="number" id="baseNumber" placeholder="Enter bundle number (e.g., 2382)" min="1">
         </div>
         
         <div class="row">
@@ -504,12 +505,12 @@
         if (isDarkMode) {
             body.setAttribute('data-theme', 'dark');
             themeIcon.textContent = '☀️';
-            themeText.textContent = 'Light Mode';
+            themeText.textContent = '';
             localStorage.setItem('theme', 'dark');
         } else {
             body.removeAttribute('data-theme');
             themeIcon.textContent = '🌙';
-            themeText.textContent = 'Dark Mode';
+            themeText.textContent = '';
             localStorage.setItem('theme', 'light');
         }
     }
