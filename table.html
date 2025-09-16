@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Case Table Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #ffcc00;
+    }
+    .input-group {
+      margin: 10px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+    .bundle-range {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #ffcc00;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #e6b800;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 30px 0;
+      background-color: #1e1e1e;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #333;
+      color: #ffcc00;
+    }
+    .table-container {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Case Table Generator</h1>
+  <div class="input-group">
+    <label>Total No. of Cases:</label>
+    <input type="number" id="totalCases" placeholder="Enter number of cases">
+  </div>
+  <div class="input-group">
+    <label>Category:</label>
+    <input type="text" id="category" placeholder="Enter category (e.g. CWP)">
+  </div>
+  <div class="input-group">
+    <label>Year:</label>
+    <input type="number" id="year" placeholder="Enter year">
+  </div>
+  <div class="input-group">
+    <label>Bundle No. Range:</label>
+    <div class="bundle-range">
+      <input type="number" id="bundleStart" placeholder="Start (e.g. 10)">
+      <input type="number" id="bundleEnd" placeholder="End (optional)">
+    </div>
+  </div>
+  <button onclick="copyTables()">Copy to Clipboard</button>
+  <button onclick="generateTables()">Preview Table</button>
+
+  <div id="tables" class="table-container"></div>
+
+  <script>
+    function getBundleNumbers() {
+      const start = parseInt(document.getElementById('bundleStart').value);
+      const end = parseInt(document.getElementById('bundleEnd').value);
+
+      if (isNaN(start)) return [""];
+      if (isNaN(end) || end < start) return [start];
+      let bundles = [];
+      for (let i = start; i <= end; i++) bundles.push(i);
+      return bundles;
+    }
+
+    function generateTableHTML(totalCases, category, year, bundleNo) {
+      let html = '<table><tr><th>S.NO.</th><th>CATEGORY</th><th>CASE NO.</th><th>YEAR</th><th>BUNDLE NO.</th></tr>';
+      for (let i = 1; i <= totalCases; i++) {
+        html += `<tr>
+          <td>${i}</td>
+          <td>${category || ""}</td>
+          <td></td>
+          <td>${year || ""}</td>
+          <td>${bundleNo || ""}</td>
+        </tr>`;
+      }
+      html += '</table>';
+      return html;
+    }
+
+    function generateTables() {
+      const totalCases = parseInt(document.getElementById('totalCases').value) || 0;
+      const category = document.getElementById('category').value.trim();
+      const year = document.getElementById('year').value.trim();
+      const bundles = getBundleNumbers();
+      const tableContainer = document.getElementById('tables');
+
+      if (totalCases <= 0) {
+        alert("Enter at least 1 case.");
+        return;
+      }
+
+      tableContainer.innerHTML = "";
+      bundles.forEach(bundleNo => {
+        tableContainer.innerHTML += generateTableHTML(totalCases, category, year, bundleNo);
+      });
+    }
+
+    function copyTables() {
+      const totalCases = parseInt(document.getElementById('totalCases').value) || 0;
+      const category = document.getElementById('category').value.trim();
+      const year = document.getElementById('year').value.trim();
+      const bundles = getBundleNumbers();
+
+      if (totalCases <= 0) {
+        alert("Enter at least 1 case.");
+        return;
+      }
+
+      let textToCopy = "";
+      bundles.forEach(bundleNo => {
+        textToCopy += "S.NO.\tCATEGORY\tCASE NO.\tYEAR\tBUNDLE NO.\n";
+        for (let i = 1; i <= totalCases; i++) {
+          textToCopy += `${i}\t${category || ""}\t\t${year || ""}\t${bundleNo || ""}\n`;
+        }
+      });
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert("Tables copied to clipboard! Paste directly into Excel.");
+      });
+    }
+  </script>
+</body>
+</html>
