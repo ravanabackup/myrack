@@ -1,0 +1,183 @@
+Sub ExportBundlesAsPDFInOneFile
+    Dim oDoc As Object, oSheet As Object
+    Dim oCursor As Object
+    Dim exportDir As String, pdfFileName As String
+    Dim lastRow As Long, row As Long
+    Dim bundleCol As Integer
+    Dim a(0) As New com.sun.star.beans.PropertyValue
+    Dim startBundle As String, endBundle As String
+    Dim startBundleNum As Integer, endBundleNum As Integer
+    Dim currentBundleNum As Integer
+    Dim firstValidBundleFound As Boolean
+    Dim inValidBundle As Boolean
+    Dim shouldProcessRow As Boolean
+    
+    ' Get current document and first sheet
+    oDoc = ThisComponent
+    oSheet = oDoc.Sheets(0)
+    
+    ' Ask export directory
+    exportDir = InputBox("Enter folder path to save PDFs (e.g. /home/user/Documents):", "Export Path")
+    If exportDir = "" Then Exit Sub
+    
+    ' Ask for bundle range
+    startBundle = InputBox("Enter starting bundle number (or leave empty for all):", "Start Bundle", "")
+    If startBundle <> "" Then
+        endBundle = InputBox("Enter ending bundle number:", "End Bundle", startBundle)
+        startBundleNum = CInt(startBundle)
+        endBundleNum = CInt(endBundle)
+    End If
+    
+    ' Detect last row
+    oCursor = oSheet.createCursor()
+    oCursor.gotoEndOfUsedArea(True)
+    lastRow = oCursor.RangeAddress.EndRow
+    
+    ' Bundle column index (E = 4, 0-based indexing)
+    bundleCol = 4
+    
+    ' Clear existing row breaks and unmerge all cells
+    For row = 0 To lastRow
+        oSheet.getRows().getByIndex(row).IsStartOfNewPage = False
+        ' Unmerge any merged cells in this row
+        For col = 0 To 10
+            Dim cellRange As Object
+            cellRange = oSheet.getCellRangeByPosition(col, row, col, row)
+            If cellRange.IsMerged Then
+                cellRange.unmerge()
+            End If
+        Next col
+    Next row
+    
+    ' Hide all rows initially, then show only the ones we want
+    For row = 0 To lastRow
+        oSheet.getRows().getByIndex(row).IsVisible = False
+    Next row
+    
+    ' Process rows and show/hide based on bundle selection
+    firstValidBundleFound = False
+    inValidBundle = False
+    currentBundleNum = 0
+    
+    For row = 0 To lastRow
+        Dim cellVal As String
+        Dim snoCell As String
+        shouldProcessRow = True
+        
+        cellVal = oSheet.getCellByPosition(bundleCol, row).String
+        snoCell = oSheet.getCellByPosition(0, row).String
+        
+        ' Skip the problematic first row with "Bundle X" text
+        If InStr(oSheet.getCellByPosition(0, row).String, "Bundle") > 0 And row = 0 Then
+            shouldProcessRow = False
+        End If
+        
+        If shouldProcessRow Then
+            ' Check if this is a header row
+            If snoCell = "S.NO." Then
+                ' Look ahead to find the bundle number for this section
+                Dim lookAheadRow As Long
+                currentBundleNum = 0
+                For lookAheadRow = row + 1 To lastRow
+                    Dim nextBundleVal As String
+                    nextBundleVal = oSheet.getCellByPosition(bundleCol, lookAheadRow).String
+                    If nextBundleVal <> "" And IsNumeric(nextBundleVal) Then
+                        currentBundleNum = CInt(nextBundleVal)
+                        Exit For
+                    End If
+                Next lookAheadRow
+                
+                ' Check if this bundle is in our range
+                If startBundle <> "" Then
+                    inValidBundle = (currentBundleNum >= startBundleNum And currentBundleNum <= endBundleNum)
+                Else
+                    inValidBundle = True
+                End If
+                
+                ' If this is a valid bundle, show the header and set page break
+                If inValidBundle Then
+                    oSheet.getRows().getByIndex(row).IsVisible = True
+                    If firstValidBundleFound Then
+                        oSheet.getRows().getByIndex(row).IsStartOfNewPage = True
+                    Else
+                        firstValidBundleFound = True
+                    End If
+                End If
+                
+            ' Check if this is a data row
+            ElseIf cellVal <> "" And IsNumeric(cellVal) Then
+                currentBundleNum = CInt(cellVal)
+                ' Check if this bundle is in our range
+                If startBundle <> "" Then
+                    inValidBundle = (currentBundleNum >= startBundleNum And currentBundleNum <= endBundleNum)
+                Else
+                    inValidBundle = True
+                End If
+                
+                ' Show this row if it's in a valid bundle
+                If inValidBundle Then
+                    oSheet.getRows().getByIndex(row).IsVisible = True
+                End If
+                
+            ' For other rows, show them only if we're currently in a valid bundle
+            ElseIf inValidBundle Then
+                oSheet.getRows().getByIndex(row).IsVisible = True
+            End If
+        End If
+    Next row
+    
+    ' Define file path and name
+    If startBundle <> "" Then
+        pdfFileName = exportDir & "/Bundles_" & startBundle & "_to_" & endBundle & ".pdf"
+    Else
+        pdfFileName = exportDir & "/All_Bundles.pdf"
+    End If
+    
+    ' Export to PDF with no headers/footers
+    Dim exportProps(4) As New com.sun.star.beans.PropertyValue
+    exportProps(0).Name = "FilterName"
+    exportProps(0).Value = "calc_pdf_Export"
+    exportProps(1).Name = "FilterData"
+    
+    ' Create filter data to remove headers and footers
+    Dim filterData(3) As New com.sun.star.beans.PropertyValue
+    filterData(0).Name = "PrintLeftPages"
+    filterData(0).Value = True
+    filterData(1).Name = "PrintRightPages" 
+    filterData(1).Value = True
+    filterData(2).Name = "IsAddPrintRange"
+    filterData(2).Value = False
+    filterData(3).Name = "ExportNotes"
+    filterData(3).Value = False
+    
+    exportProps(1).Value = filterData()
+    
+    ' Temporarily disable headers and footers in page style
+    Dim oPageStyles As Object
+    Dim oPageStyle As Object
+    oPageStyles = oDoc.getStyleFamilies().getByName("PageStyles")
+    oPageStyle = oPageStyles.getByName("Default")
+    
+    ' Store original header/footer settings
+    Dim origHeaderOn As Boolean, origFooterOn As Boolean
+    origHeaderOn = oPageStyle.HeaderIsOn
+    origFooterOn = oPageStyle.FooterIsOn
+    
+    ' Disable headers and footers
+    oPageStyle.HeaderIsOn = False
+    oPageStyle.FooterIsOn = False
+    
+    oDoc.storeToURL(ConvertToURL(pdfFileName), exportProps())
+    
+    ' Restore original header/footer settings
+    oPageStyle.HeaderIsOn = origHeaderOn
+    oPageStyle.FooterIsOn = origFooterOn
+    
+    ' Cleanup: remove all page breaks and show all rows
+    For row = 0 To lastRow
+        oSheet.getRows().getByIndex(row).IsStartOfNewPage = False
+        oSheet.getRows().getByIndex(row).IsVisible = True
+    Next row
+    
+    MsgBox "PDF exported successfully to: " & pdfFileName
+End Sub
