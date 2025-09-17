@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Split Cases Among 5 Members</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa6b2; --accent:#60a5fa;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#071025 0%, #091428 60%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:28px;}
+    .wrap{width:100%;max-width:880px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(2,6,23,0.6);}
+    h1{margin:0 0 8px;font-size:20px;}
+    p.lead{margin:0 0 18px;color:var(--muted);font-size:13px;}
+    .controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+    .card{background:var(--card);border-radius:10px;padding:12px;flex:1;min-width:190px;}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+    input[type=number], input[type=range], select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;font-size:14px;}
+    .row{display:flex;gap:12px;align-items:center;}
+    .btn{background:var(--accent);color:#03203b;padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:600;}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);}
+    .result{margin-top:14px;display:grid;grid-template-columns: repeat(2,1fr);gap:12px;}
+    .member{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);}
+    .member h3{margin:0;font-size:14px;}
+    .member p{margin:6px 0 0;font-size:20px;font-weight:700;}
+    .summary{grid-column: 1/ -1; display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;border:1px dashed rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);}
+    .small{font-size:12px;color:var(--muted);}
+    .actions{display:flex;gap:8px;}
+    .export{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    footer{margin-top:12px;color:var(--muted);font-size:12px;}
+    @media (max-width:640px){
+      .result{grid-template-columns:1fr;}
+      .controls{flex-direction:column;}
+      .card{min-width:unset;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <h1>Split a total of cases among 5 members</h1>
+    <p class="lead">Enter the total number of cases (X). The generator will create 5 allocations that are close to equal but not identical. Optionally, you can round results to nearest 5, 10, or 15.</p>
+
+    <div class="controls">
+      <div class="card">
+        <label>Total cases (X)</label>
+        <input id="total" type="number" min="0" step="1" value="123" />
+      </div>
+
+      <div class="card">
+        <label>Allowed variance (percentage of average)</label>
+        <input id="variance" type="range" min="0" max="40" step="1" value="10" />
+        <div class="row" style="margin-top:6px;">
+          <div class="small">Variance: <strong id="varianceLabel">10%</strong></div>
+          <div style="flex:1"></div>
+          <div class="small">Min diff | Max diff ≈ <span id="approxDiff">±</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Round to nearest</label>
+        <select id="rounding">
+          <option value="1">None</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+        </select>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:150px;">
+        <button class="btn" id="generate">Generate Split</button>
+        <button class="btn secondary" id="randomize">Random Example</button>
+      </div>
+    </div>
+
+    <div id="message" class="small" style="margin-bottom:8px;color:var(--muted)"></div>
+
+    <div id="resultsArea" class="result" aria-live="polite"></div>
+
+    <div class="export">
+      <div class="actions">
+        <button class="btn secondary" id="copyAll">Copy all as text</button>
+        <button class="btn secondary" id="copyCSV">Copy CSV</button>
+        <button class="btn secondary" id="downloadCSV">Download CSV</button>
+      </div>
+    </div>
+
+    <footer>Note: If total &lt; 5, some members may receive 0. Rounding adjustments ensure the sum still matches total.</footer>
+  </div>
+
+  <script>
+    function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function splitCases(total, variancePercent){
+      total = Math.max(0, Math.floor(total)||0);
+      if(total === 0){ return [0,0,0,0,0]; }
+
+      const base = Math.floor(total / 5);
+      let arr = new Array(5).fill(base);
+
+      let remainder = total - base*5;
+      while(remainder > 0){ arr[randInt(0,4)]++; remainder--; }
+
+      const allowedDev = Math.max(1, Math.round(base * (variancePercent/100)));
+
+      const deltas = [0,0,0,0,0];
+      for(let k=0;k<10;k++){
+        const i = randInt(0,4), j = randInt(0,4);
+        if(i===j) continue;
+        const change = randInt(0, Math.max(1, Math.floor(allowedDev/2)));
+        deltas[i] = Math.min(allowedDev, Math.max(-allowedDev, deltas[i] + change));
+        deltas[j] = Math.min(allowedDev, Math.max(-allowedDev, deltas[j] - change));
+      }
+
+      for(let idx=0; idx<5; idx++){
+        let candidate = arr[idx] + deltas[idx];
+        const lowBound = Math.max(0, base - allowedDev);
+        const highBound = base + allowedDev + Math.floor(total/10);
+        arr[idx] = Math.min(highBound, Math.max(lowBound, candidate));
+      }
+
+      let curSum = arr.reduce((a,b)=>a+b,0);
+      let diff = total - curSum;
+      let idx = 0;
+      while(diff !== 0){
+        if(diff > 0){ arr[idx%5]++; diff--; }
+        else{ if(arr[idx%5] > 0){ arr[idx%5]--; diff++; } }
+        idx++;
+      }
+
+      const allSame = arr.every(v => v === arr[0]);
+      if(allSame && total >= 5){ arr[0]--; arr[1]++; }
+
+      return arr.map(x => Math.round(x));
+    }
+
+    function applyRounding(arr, total, roundTo){
+      if(roundTo <= 1) return arr; // no rounding
+
+      let rounded = arr.map(v => Math.round(v/roundTo)*roundTo);
+      let diff = total - rounded.reduce((a,b)=>a+b,0);
+
+      // fix differences by adjusting smallest increments of "roundTo"
+      while(diff !== 0){
+        if(diff > 0){
+          const i = randInt(0,4);
+          rounded[i] += roundTo;
+          diff -= roundTo;
+        } else {
+          const i = rounded.findIndex(v => v >= roundTo);
+          if(i !== -1){ rounded[i] -= roundTo; diff += roundTo; }
+          else break;
+        }
+      }
+      return rounded;
+    }
+
+    const totalInput = document.getElementById('total');
+    const varianceInput = document.getElementById('variance');
+    const varianceLabel = document.getElementById('varianceLabel');
+    const approxDiff = document.getElementById('approxDiff');
+    const roundingSelect = document.getElementById('rounding');
+    const generateBtn = document.getElementById('generate');
+    const randomizeBtn = document.getElementById('randomize');
+    const resultsArea = document.getElementById('resultsArea');
+    const message = document.getElementById('message');
+    const copyAllBtn = document.getElementById('copyAll');
+    const copyCSVBtn = document.getElementById('copyCSV');
+    const downloadCSVBtn = document.getElementById('downloadCSV');
+
+    function updateApprox(){
+      const total = Math.max(0, Math.floor(parseInt(totalInput.value)||0));
+      const variance = parseInt(varianceInput.value);
+      const base = Math.floor(total/5) || 0;
+      const allowed = Math.max(1, Math.round(base * (variance/100)));
+      varianceLabel.textContent = variance + '%';
+      approxDiff.textContent = allowed ? '±' + allowed : '±0';
+    }
+
+    function showResult(arr){
+      resultsArea.innerHTML = '';
+      const total = arr.reduce((a,b)=>a+b,0);
+      for(let i=0;i<5;i++){
+        const card = document.createElement('div');
+        card.className = 'member';
+        card.innerHTML = `<h3>Member ${i+1}</h3><p id="m${i}">${arr[i]}</p>`;
+        resultsArea.appendChild(card);
+      }
+      const summary = document.createElement('div');
+      summary.className = 'summary';
+      summary.innerHTML = `<div><div class="small">Total</div><div style="font-weight:800;font-size:18px">${total}</div></div>
+                           <div style="text-align:right">
+                             <div class="small">Min / Max</div>
+                             <div style="font-weight:700;">${Math.min(...arr)} / ${Math.max(...arr)}</div>
+                           </div>`;
+      resultsArea.appendChild(summary);
+
+      message.textContent = `Generated. Sum = ${total}. Difference between min and max = ${Math.max(...arr) - Math.min(...arr)}.`;
+    }
+
+    function generateAndShow(){
+      const total = Math.floor(parseInt(totalInput.value) || 0);
+      const variance = Math.max(0, Math.min(40, parseInt(varianceInput.value)||10));
+      const roundTo = parseInt(roundingSelect.value);
+
+      let arr = splitCases(total, variance);
+      arr = applyRounding(arr, total, roundTo);
+
+      showResult(arr);
+    }
+
+    function buildTextAndCSV(){
+      const memberEls = resultsArea.querySelectorAll('.member p');
+      if(memberEls.length < 5) return {text:'', csv:''};
+      const values = Array.from(memberEls).map((p,i)=>`${i+1}: ${p.textContent.trim()}`);
+      const text = values.join('\n');
+      const csvRows = [['Member','Cases'], ...values.map(v=>{
+        const parts = v.split(':');
+        return [parts[0].trim(), Number(parts[1].trim())];
+      })];
+      const csv = csvRows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      return {text, csv};
+    }
+
+    copyAllBtn.addEventListener('click', ()=>{
+      const {text} = buildTextAndCSV();
+      if(!text){ message.textContent = 'No result to copy. Generate first.'; return; }
+      navigator.clipboard.writeText(text).then(()=> message.textContent = 'Copied text to clipboard.' );
+    });
+    copyCSVBtn.addEventListener('click', ()=>{
+      const {csv} = buildTextAndCSV();
+      if(!csv){ message.textContent = 'No result to copy. Generate first.'; return; }
+      navigator.clipboard.writeText(csv).then(()=> message.textContent = 'Copied CSV to clipboard.' );
+    });
+    downloadCSVBtn.addEventListener('click', ()=>{
+      const {csv} = buildTextAndCSV();
+      if(!csv){ message.textContent = 'No result to download. Generate first.'; return; }
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'case_split.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    randomizeBtn.addEventListener('click', ()=>{
+      totalInput.value = randInt(15, 450);
+      varianceInput.value = randInt(4, 18);
+      roundingSelect.value = [1,5,10,15][randInt(0,3)];
+      updateApprox();
+      generateAndShow();
+    });
+
+    generateBtn.addEventListener('click', ()=>{ updateApprox(); generateAndShow(); });
+    varianceInput.addEventListener('input', updateApprox);
+    totalInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') { updateApprox(); generateAndShow(); } });
+
+    updateApprox();
+    generateAndShow();
+  </script>
+</body>
+</html>
