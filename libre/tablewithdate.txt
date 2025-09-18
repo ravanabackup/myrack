@@ -1,0 +1,699 @@
+Sub CaseTableGenerator()
+
+    ' Case Table Generator Macro for LibreOffice Calc
+
+    ' This macro generates case tables and pastes them starting from "sms" text location
+
+    
+
+    Dim oDoc As Object
+
+    Dim oSheet As Object
+
+    Dim oDialog As Object
+
+    Dim oDialogModel As Object
+
+    Dim oControlModel As Object
+
+    Dim oToolkit As Object
+
+    Dim oDescriptor As Object
+
+    
+
+    ' Get the current document and active sheet
+
+    oDoc = ThisComponent
+
+    oSheet = oDoc.getSheets().getByIndex(0)
+
+    
+
+    ' Check if "sms" exists before proceeding
+
+    If Not CheckForSmsText(oSheet) Then
+
+        Exit Sub
+
+    End If
+
+    
+
+    ' Create dialog
+
+    oDialog = CreateDialog()
+
+    
+
+    ' Show dialog and get result
+
+    If oDialog.execute() = 1 Then ' OK button pressed
+
+        ' Get values from dialog
+
+        Dim totalCases As Integer
+
+        Dim category As String
+
+        Dim year As String
+
+        Dim bundleStart As Integer
+
+        Dim bundleEnd As Integer
+
+        
+
+        totalCases = CInt(oDialog.getControl("txtTotalCases").getText())
+
+        category = oDialog.getControl("txtCategory").getText()
+
+        year = oDialog.getControl("txtYear").getText()
+
+        bundleStart = CInt(oDialog.getControl("txtBundleStart").getText())
+
+        bundleEnd = CInt(oDialog.getControl("txtBundleEnd").getText())
+
+        
+
+        ' Validate input
+
+        If totalCases <= 0 Then
+
+            MsgBox("Please enter at least 1 case.", 16, "Invalid Input")
+
+            oDialog.dispose()
+
+            Exit Sub
+
+        End If
+
+        
+
+        ' Generate and paste tables
+
+        Call GenerateAndPasteTables(oSheet, totalCases, category, year, bundleStart, bundleEnd)
+
+    End If
+
+    
+
+    oDialog.dispose()
+
+End Sub
+
+
+
+Function CheckForSmsText(oSheet As Object) As Boolean
+
+    ' Check if "sms" text exists in the sheet
+
+    Dim oSearchDesc As Object
+
+    Dim oFound As Object
+
+    
+
+    oSearchDesc = oSheet.createSearchDescriptor()
+
+    oSearchDesc.SearchString = "sms"
+
+    oSearchDesc.SearchCaseSensitive = False
+
+    oFound = oSheet.findFirst(oSearchDesc)
+
+    
+
+    If IsNull(oFound) Then
+
+        MsgBox("Please type 'sms' in any cell where you want the case table to be generated, then run this macro again.", 48, "SMS Text Required")
+
+        CheckForSmsText = False
+
+    Else
+
+        CheckForSmsText = True
+
+    End If
+
+End Function
+
+
+
+Function CreateDialog() As Object
+
+    ' Create the input dialog
+
+    Dim oDialogModel As Object
+
+    Dim oDialog As Object
+
+    Dim oControlModel As Object
+
+    
+
+    ' Create dialog model
+
+    oDialogModel = CreateUnoService("com.sun.star.awt.UnoControlDialogModel")
+
+    oDialogModel.Width = 200
+
+    oDialogModel.Height = 180
+
+    oDialogModel.Title = "Case Table Generator"
+
+    
+
+    ' Total Cases input
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlFixedTextModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 10
+
+    oControlModel.Width = 80
+
+    oControlModel.Height = 12
+
+    oControlModel.Label = "Total No. of Cases:"
+
+    oDialogModel.insertByName("lblTotalCases", oControlModel)
+
+    
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlEditModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 25
+
+    oControlModel.Width = 180
+
+    oControlModel.Height = 12
+
+    oDialogModel.insertByName("txtTotalCases", oControlModel)
+
+    
+
+    ' Category input
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlFixedTextModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 45
+
+    oControlModel.Width = 80
+
+    oControlModel.Height = 12
+
+    oControlModel.Label = "Category:"
+
+    oDialogModel.insertByName("lblCategory", oControlModel)
+
+    
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlEditModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 60
+
+    oControlModel.Width = 180
+
+    oControlModel.Height = 12
+
+    oDialogModel.insertByName("txtCategory", oControlModel)
+
+    
+
+    ' Year input
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlFixedTextModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 80
+
+    oControlModel.Width = 80
+
+    oControlModel.Height = 12
+
+    oControlModel.Label = "Year:"
+
+    oDialogModel.insertByName("lblYear", oControlModel)
+
+    
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlEditModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 95
+
+    oControlModel.Width = 180
+
+    oControlModel.Height = 12
+
+    oDialogModel.insertByName("txtYear", oControlModel)
+
+    
+
+    ' Bundle Start input
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlFixedTextModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 115
+
+    oControlModel.Width = 80
+
+    oControlModel.Height = 12
+
+    oControlModel.Label = "Bundle Start:"
+
+    oDialogModel.insertByName("lblBundleStart", oControlModel)
+
+    
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlEditModel")
+
+    oControlModel.PositionX = 10
+
+    oControlModel.PositionY = 130
+
+    oControlModel.Width = 85
+
+    oControlModel.Height = 12
+
+    oDialogModel.insertByName("txtBundleStart", oControlModel)
+
+    
+
+    ' Bundle End input
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlFixedTextModel")
+
+    oControlModel.PositionX = 105
+
+    oControlModel.PositionY = 115
+
+    oControlModel.Width = 80
+
+    oControlModel.Height = 12
+
+    oControlModel.Label = "Bundle End:"
+
+    oDialogModel.insertByName("lblBundleEnd", oControlModel)
+
+    
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlEditModel")
+
+    oControlModel.PositionX = 105
+
+    oControlModel.PositionY = 130
+
+    oControlModel.Width = 85
+
+    oControlModel.Height = 12
+
+    oDialogModel.insertByName("txtBundleEnd", oControlModel)
+
+    
+
+    ' OK Button
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlButtonModel")
+
+    oControlModel.PositionX = 50
+
+    oControlModel.PositionY = 155
+
+    oControlModel.Width = 40
+
+    oControlModel.Height = 15
+
+    oControlModel.Label = "Generate"
+
+    oControlModel.PushButtonType = 1 ' OK button
+
+    oDialogModel.insertByName("btnOK", oControlModel)
+
+    
+
+    ' Cancel Button
+
+    oControlModel = oDialogModel.createInstance("com.sun.star.awt.UnoControlButtonModel")
+
+    oControlModel.PositionX = 110
+
+    oControlModel.PositionY = 155
+
+    oControlModel.Width = 40
+
+    oControlModel.Height = 15
+
+    oControlModel.Label = "Cancel"
+
+    oControlModel.PushButtonType = 2 ' Cancel button
+
+    oDialogModel.insertByName("btnCancel", oControlModel)
+
+    
+
+    ' Create dialog
+
+    oDialog = CreateUnoService("com.sun.star.awt.UnoControlDialog")
+
+    oDialog.setModel(oDialogModel)
+
+    oDialog.setPosSize(0, 0, 0, 0, com.sun.star.awt.PosSize.SIZE)
+
+    
+
+    CreateDialog = oDialog
+
+End Function
+
+
+
+Function GetCurrentTimestamp() As String
+
+    ' Function to get current date and time formatted as string
+
+    Dim currentDateTime As Date
+
+    currentDateTime = Now()
+
+    
+
+    ' Format: DD/MM/YYYY HH:MM:SS
+
+    GetCurrentTimestamp = Format(currentDateTime, "DD/MM/YYYY HH:MM:SS")
+
+End Function
+
+
+
+Sub GenerateAndPasteTables(oSheet As Object, totalCases As Integer, category As String, year As String, bundleStart As Integer, bundleEnd As Integer)
+
+    ' Find the "sms" text in the sheet
+
+    Dim oSearchDesc As Object
+
+    Dim oFound As Object
+
+    Dim startRow As Long
+
+    Dim startCol As Long
+
+    
+
+    oSearchDesc = oSheet.createSearchDescriptor()
+
+    oSearchDesc.SearchString = "sms"
+
+    oSearchDesc.SearchCaseSensitive = False
+
+    oFound = oSheet.findFirst(oSearchDesc)
+
+    
+
+    ' Since we already checked for "sms" existence, this should not be null
+
+    startRow = oFound.getCellAddress().Row
+
+    startCol = oFound.getCellAddress().Column
+
+    
+
+    ' Get current timestamp
+
+    Dim currentTimestamp As String
+
+    currentTimestamp = GetCurrentTimestamp()
+
+    
+
+    ' Determine bundle numbers
+
+    Dim bundles() As Integer
+
+    Dim bundleCount As Integer
+
+    
+
+    If bundleEnd = 0 Or bundleEnd < bundleStart Then
+
+        bundleCount = 1
+
+        ReDim bundles(0)
+
+        bundles(0) = bundleStart
+
+    Else
+
+        bundleCount = bundleEnd - bundleStart + 1
+
+        ReDim bundles(bundleCount - 1)
+
+        For i = 0 To bundleCount - 1
+
+            bundles(i) = bundleStart + i
+
+        Next i
+
+    End If
+
+    
+
+    ' Generate tables for each bundle
+
+    Dim currentRow As Long
+
+    currentRow = startRow
+
+    
+
+    For bundleIndex = 0 To UBound(bundles)
+
+        ' Create header row
+
+        oSheet.getCellByPosition(startCol, currentRow).setString("S.NO.")
+
+        oSheet.getCellByPosition(startCol + 1, currentRow).setString("CATEGORY")
+
+        oSheet.getCellByPosition(startCol + 2, currentRow).setString("CASE NO.")
+
+        oSheet.getCellByPosition(startCol + 3, currentRow).setString("YEAR")
+
+        oSheet.getCellByPosition(startCol + 4, currentRow).setString("BUNDLE NO.")
+
+        oSheet.getCellByPosition(startCol + 5, currentRow).setString("TIME & DATE OF PASTE")
+
+        
+
+        ' Format header row
+
+        Dim oHeaderRange As Object
+
+        oHeaderRange = oSheet.getCellRangeByPosition(startCol, currentRow, startCol + 5, currentRow)
+
+        oHeaderRange.CellBackColor = RGB(255, 255, 255) ' White background
+
+        oHeaderRange.CharColor = RGB(0, 0, 0) ' Black text
+
+        oHeaderRange.CharWeight = com.sun.star.awt.FontWeight.BOLD
+
+        
+
+        currentRow = currentRow + 1
+
+        
+
+        ' Create data rows
+
+        For caseNum = 1 To totalCases
+
+            oSheet.getCellByPosition(startCol, currentRow).setValue(caseNum)
+
+            oSheet.getCellByPosition(startCol + 1, currentRow).setString(category)
+
+            oSheet.getCellByPosition(startCol + 2, currentRow).setString("") ' Empty case number
+
+            oSheet.getCellByPosition(startCol + 3, currentRow).setString(year)
+
+            oSheet.getCellByPosition(startCol + 4, currentRow).setValue(bundles(bundleIndex))
+
+            oSheet.getCellByPosition(startCol + 5, currentRow).setString(currentTimestamp)
+
+            
+
+            currentRow = currentRow + 1
+
+        Next caseNum
+
+        
+
+        ' No space between tables - continue immediately
+
+    Next bundleIndex
+
+    
+
+    ' Format the entire table area (now includes 6 columns instead of 5)
+
+    Dim oTableRange As Object
+
+    oTableRange = oSheet.getCellRangeByPosition(startCol, startRow, startCol + 5, currentRow - 1)
+
+    oTableRange.setPropertyValue("TableBorder", CreateTableBorder())
+
+    
+
+    MsgBox("Case table(s) generated successfully with timestamp: " & currentTimestamp, 64, "Success")
+
+End Sub
+
+
+
+Function CreateTableBorder() As Object
+
+    ' Create table border structure
+
+    Dim oBorder As Object
+
+    Dim oLine As Object
+
+    
+
+    oBorder = CreateUnoStruct("com.sun.star.table.TableBorder")
+
+    oLine = CreateUnoStruct("com.sun.star.table.BorderLine")
+
+    
+
+    oLine.Color = RGB(0, 0, 0) ' Black borders
+
+    oLine.OuterLineWidth = 1
+
+    
+
+    oBorder.TopLine = oLine
+
+    oBorder.BottomLine = oLine
+
+    oBorder.LeftLine = oLine
+
+    oBorder.RightLine = oLine
+
+    oBorder.HorizontalLine = oLine
+
+    oBorder.VerticalLine = oLine
+
+    
+
+    oBorder.IsTopLineValid = True
+
+    oBorder.IsBottomLineValid = True
+
+    oBorder.IsLeftLineValid = True
+
+    oBorder.IsRightLineValid = True
+
+    oBorder.IsHorizontalLineValid = True
+
+    oBorder.IsVerticalLineValid = True
+
+    
+
+    CreateTableBorder = oBorder
+
+End Function
+
+
+
+' Alternative simpler version that uses InputBox instead of custom dialog
+
+Sub CaseTableGeneratorSimple()
+
+    ' Simple version using InputBox
+
+    Dim oSheet As Object
+
+    oSheet = ThisComponent.getSheets().getByIndex(0)
+
+    
+
+    ' Check if "sms" exists before proceeding
+
+    If Not CheckForSmsText(oSheet) Then
+
+        Exit Sub
+
+    End If
+
+    
+
+    Dim totalCases As Integer
+
+    Dim category As String
+
+    Dim year As String
+
+    Dim bundleStart As Integer
+
+    Dim bundleEnd As Integer
+
+    Dim bundleRange As String
+
+    
+
+    ' Get input from user
+
+    totalCases = CInt(InputBox("Enter total number of cases:", "Case Table Generator", ""))
+
+    If totalCases <= 0 Then
+
+        MsgBox("Please enter a valid number of cases.")
+
+        Exit Sub
+
+    End If
+
+    
+
+    category = InputBox("Enter category (e.g., CWP):", "Case Table Generator", "")
+
+    year = InputBox("Enter year:", "Case Table Generator", "")
+
+    bundleRange = InputBox("Enter bundle range (e.g., '10' for single bundle or '10-15' for range):", "Case Table Generator", "")
+
+    
+
+    ' Parse bundle range
+
+    If InStr(bundleRange, "-") > 0 Then
+
+        bundleStart = CInt(Left(bundleRange, InStr(bundleRange, "-") - 1))
+
+        bundleEnd = CInt(Mid(bundleRange, InStr(bundleRange, "-") + 1))
+
+    Else
+
+        bundleStart = CInt(bundleRange)
+
+        bundleEnd = bundleStart
+
+    End If
+
+    
+
+    ' Generate tables
+
+    Call GenerateAndPasteTables(oSheet, totalCases, category, year, bundleStart, bundleEnd)
+
+End Sub
