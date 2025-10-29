@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serial Number Totaler | Grand Total: 0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Material You Theming --- */
+        :root {
+            /* Light Mode Palette (Inspired by Material You Green/Mint) */
+            --md-sys-color-primary: #006b5a;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-primary-container: #79f8db;
+            --md-sys-color-on-primary-container: #00201a;
+            --md-sys-color-surface: #f5fbf8;
+            --md-sys-color-on-surface: #1a1c1b;
+            --md-sys-color-surface-container-high: #eceff1;
+            --md-sys-color-surface-container-low: #f5fbf8;
+            --md-sys-color-outline: #6f7975;
+            --md-sys-color-error: #ba1a1a;
+            --md-sys-color-on-error: #ffffff;
+
+            /* Component variables */
+            --bg-color: var(--md-sys-color-surface-container-low);
+            --container-bg: var(--md-sys-color-surface);
+            --text-color: var(--md-sys-color-on-surface);
+            --header-bg: var(--md-sys-color-primary);
+            --header-text: var(--md-sys-color-on-primary);
+            --total-bg: var(--md-sys-color-surface-container-high);
+            --grand-total-bg: var(--md-sys-color-primary-container);
+            --grand-total-text: var(--md-sys-color-on-primary-container);
+            --shadow: rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --input-border: var(--md-sys-color-outline);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Mode Palette */
+            --md-sys-color-primary: #59dbbf;
+            --md-sys-color-on-primary: #00382e;
+            --md-sys-color-primary-container: #005143;
+            --md-sys-color-on-primary-container: #79f8db;
+            --md-sys-color-surface: #1a1c1b;
+            --md-sys-color-on-surface: #e0e3e1;
+            --md-sys-color-surface-container-high: #2c2f2e;
+            --md-sys-color-surface-container-low: #1a1c1b;
+            --md-sys-color-outline: #89938f;
+            --md-sys-color-error: #ffb4ab;
+            --md-sys-color-on-error: #690005;
+
+            /* Component variables */
+            --bg-color: var(--md-sys-color-surface-container-low);
+            --container-bg: var(--md-sys-color-surface);
+            --text-color: var(--md-sys-color-on-surface);
+            --header-bg: var(--md-sys-color-primary);
+            --header-text: var(--md-sys-color-on-primary);
+            --total-bg: var(--md-sys-color-surface-container-high);
+            --grand-total-bg: var(--md-sys-color-primary-container);
+            --grand-total-text: var(--md-sys-color-on-primary-container);
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- General Styles --- */
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px var(--shadow);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* --- Buttons (Material Inspired) --- */
+        button {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px; /* Fully rounded for Material Look */
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .theme-toggle {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .reset-btn {
+            background-color: #ffb74d; /* Orange secondary */
+            color: #402300;
+        }
+
+        [data-theme="dark"] .reset-btn {
+            background-color: #ff9800;
+            color: black;
+        }
+
+        .reset-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+        
+        .add-btn {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+
+        .add-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+        
+        .delete-btn {
+            background-color: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+            padding: 6px 12px;
+            border-radius: 16px;
+            box-shadow: none;
+        }
+
+        .delete-btn:hover {
+            background-color: #cf2a2a;
+        }
+
+        /* --- Table Styles --- */
+        .table-container {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--md-sys-color-outline);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--container-bg);
+        }
+
+        th {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 15px 12px;
+            text-align: center;
+            font-weight: 500;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--input-border);
+            border-right: 1px solid var(--input-border);
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        /* --- Input Styles --- */
+        input[type="number"] {
+            width: 80px;
+            padding: 10px 8px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px; /* Material rounded corners */
+            text-align: center;
+            font-size: 16px;
+            background: var(--container-bg);
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+        }
+
+        /* --- Total Rows --- */
+        .total-cell {
+            background-color: var(--total-bg);
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .grand-total-row {
+            background-color: var(--grand-total-bg);
+            color: var(--grand-total-text);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .grand-total-row td {
+            border-bottom: none;
+            padding: 20px 15px;
+        }
+
+        .btn-container {
+            text-align: center;
+        }
+
+        .keyboard-hint {
+            font-size: 12px;
+            color: var(--md-sys-color-outline);
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Serial Number Totaler 🔢</h1>
+            <div class="controls">
+                <button class="reset-btn" onclick="resetAll()">Reset All</button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="serialTable">
+                <thead>
+                    <tr>
+                        <th>Start Serial</th>
+                        <th>End Serial</th>
+                        <th>Total Count</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr data-row="1">
+                        <td>
+                            <input type="number" class="start-input" placeholder="Start" oninput="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)" data-row="1" data-col="0">
+                        </td>
+                        <td>
+                            <input type="number" class="end-input" placeholder="End" oninput="calculateTotal(1)" onkeydown="handleKeyPress(event, 1)" data-row="1" data-col="1">
+                        </td>
+                        <td class="total-cell">
+                            <span class="total-value">0</span>
+                        </td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteRow(1)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="grand-total-row">
+                        <td colspan="2"><strong>Grand Total</strong></td>
+                        <td><strong><span id="grandTotal">0</span></strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="btn-container">
+            <button class="add-btn" onclick="addRow()">+ Add Row</button>
+        </div>
+
+        <div class="keyboard-hint">
+            Use **Arrow Keys** to navigate • **Enter** to add row • **Ctrl+Delete** to remove row • **Escape** to clear current input
+        </div>
+    </div>
+
+    <script>
+        let rowCounter = 1;
+        let currentTheme = 'light';
+        const APP_TITLE_BASE = 'Serial Number Totaler';
+
+        function handleKeyPress(event, rowId) {
+            const currentInput = event.target;
+            const currentRow = parseInt(currentInput.getAttribute('data-row') || rowId);
+            const currentCol = parseInt(currentInput.getAttribute('data-col') || (currentInput.classList.contains('start-input') ? 0 : 1));
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                // Check if both fields in the current row are filled before adding a new row
+                const row = document.querySelector(`tr[data-row="${rowId}"]`);
+                const startVal = row.querySelector('.start-input').value;
+                const endVal = row.querySelector('.end-input').value;
+                
+                if (startVal.trim() !== '' || endVal.trim() !== '') {
+                    addRow();
+                    setTimeout(() => {
+                        const newRow = document.querySelector(`tr[data-row="${rowCounter}"]`);
+                        if (newRow) {
+                            newRow.querySelector('.start-input').focus();
+                        }
+                    }, 10);
+                } else if (startVal.trim() === '' && endVal.trim() === '') {
+                    // If current row is empty, focus on the Start field to allow entry
+                    currentInput.focus();
+                }
+
+            } else if (event.key === 'Delete' && event.ctrlKey) {
+                event.preventDefault();
+                deleteRow(rowId);
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                currentInput.value = '';
+                calculateTotal(rowId);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                navigateToCell(currentRow - 1, currentCol);
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                navigateToCell(currentRow + 1, currentCol);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                navigateToCell(currentRow, currentCol - 1);
+            } else if (event.key === 'ArrowRight' || event.key === 'Tab') {
+                if (event.key === 'Tab' && currentCol === 1) { 
+                    // Let Tab function normally on the last input of the row 
+                    // to jump out of the table or add a new row
+                    if (document.activeElement === currentInput) {
+                        event.preventDefault();
+                        addRow();
+                        setTimeout(() => {
+                            const newRow = document.querySelector(`tr[data-row="${rowCounter}"]`);
+                            if (newRow) {
+                                newRow.querySelector('.start-input').focus();
+                            }
+                        }, 10);
+                    }
+                } else if (event.key === 'ArrowRight' || (event.key === 'Tab' && currentCol === 0)) {
+                    event.preventDefault();
+                    navigateToCell(currentRow, currentCol + 1);
+                }
+            }
+        }
+
+        function navigateToCell(targetRow, targetCol) {
+            // Clamp column to valid range (0-1)
+            targetCol = Math.max(0, Math.min(1, targetCol));
+
+            let row = document.querySelector(`tr[data-row="${targetRow}"]`);
+
+            if (!row) {
+                const allRows = Array.from(document.querySelectorAll('#tableBody tr[data-row]'));
+                if (allRows.length === 0) return;
+
+                const rowNumbers = allRows.map(r => parseInt(r.getAttribute('data-row'))).sort((a, b) => a - b);
+
+                if (targetRow < rowNumbers[0]) {
+                    targetRow = rowNumbers[0];
+                } else if (targetRow > rowNumbers[rowNumbers.length - 1]) {
+                    targetRow = rowNumbers[rowNumbers.length - 1];
+                } else {
+                    targetRow = rowNumbers.reduce((prev, curr) =>
+                        Math.abs(curr - targetRow) < Math.abs(prev - targetRow) ? curr : prev
+                    );
+                }
+
+                row = document.querySelector(`tr[data-row="${targetRow}"]`);
+            }
+
+            if (row) {
+                const inputs = row.querySelectorAll('input[type="number"]');
+                if (inputs[targetCol]) {
+                    inputs[targetCol].focus();
+                }
+            }
+        }
+
+        function calculateTotal(rowId) {
+            const row = document.querySelector(`tr[data-row="${rowId}"]`);
+            if (!row) return; // Row might have been deleted
+
+            const startInput = row.querySelector('.start-input');
+            const endInput = row.querySelector('.end-input');
+            const totalSpan = row.querySelector('.total-value');
+
+            const start = parseInt(startInput.value) || 0;
+            const endValue = endInput.value.trim();
+            const end = parseInt(endValue) || 0;
+
+            let total = 0;
+            if (start > 0) {
+                if (endValue === '' || end === 0) {
+                    // Case 1: Start is entered, End is empty or 0 -> count is 1 (just the start value)
+                    total = 1;
+                } else if (end >= start) {
+                    // Case 2: Valid range
+                    total = end - start + 1;
+                }
+                // Case 3: end < start is implicitly 0
+            }
+
+            totalSpan.textContent = total;
+            updateGrandTotal();
+        }
+
+        function updateGrandTotal() {
+            const totalSpans = document.querySelectorAll('.total-value');
+            let grandTotal = 0;
+
+            totalSpans.forEach(span => {
+                grandTotal += parseInt(span.textContent) || 0;
+            });
+
+            document.getElementById('grandTotal').textContent = grandTotal;
+            updateTitle(grandTotal);
+        }
+
+        function updateTitle(grandTotal) {
+            document.title = `${APP_TITLE_BASE} | Grand Total: ${grandTotal}`;
+        }
+
+        function addRow() {
+            rowCounter++;
+            const tbody = document.getElementById('tableBody');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-row', rowCounter);
+
+            newRow.innerHTML = `
+                <td>
+                    <input type="number" class="start-input" placeholder="Start" oninput="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})" data-row="${rowCounter}" data-col="0">
+                </td>
+                <td>
+                    <input type="number" class="end-input" placeholder="End" oninput="calculateTotal(${rowCounter})" onkeydown="handleKeyPress(event, ${rowCounter})" data-row="${rowCounter}" data-col="1">
+                </td>
+                <td class="total-cell">
+                    <span class="total-value">0</span>
+                </td>
+                <td>
+                    <button class="delete-btn" onclick="deleteRow(${rowCounter})">Delete</button>
+                </td>
+            `;
+
+            tbody.appendChild(newRow);
+        }
+
+        function deleteRow(rowId) {
+            const row = document.querySelector(`tr[data-row="${rowId}"]`);
+            if (row) {
+                row.remove();
+                updateGrandTotal();
+            }
+
+            const remainingRows = document.querySelectorAll('#tableBody tr');
+            if (remainingRows.length === 0) {
+                // Keep at least one row for usability
+                addRow();
+            }
+        }
+
+        function resetAll() {
+            if (confirm('Are you sure you want to reset all values? This will also clear all rows except one.')) {
+                // Clear all rows except one
+                const tbody = document.getElementById('tableBody');
+                while (tbody.children.length > 1) {
+                    tbody.removeChild(tbody.lastChild);
+                }
+
+                // Reset the remaining row
+                const firstRow = document.querySelector('#tableBody tr');
+                if (firstRow) {
+                    firstRow.querySelector('.start-input').value = '';
+                    firstRow.querySelector('.end-input').value = '';
+                    firstRow.querySelector('.total-value').textContent = '0';
+                    firstRow.querySelector('.start-input').focus();
+                }
+
+                updateGrandTotal();
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+
+            if (currentTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                button.innerHTML = '☀️ Light';
+                currentTheme = 'dark';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.removeAttribute('data-theme');
+                button.innerHTML = '🌙 Dark';
+                currentTheme = 'light';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Initialize theme and focus
+        window.onload = function() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle').innerHTML = '☀️ Light';
+                currentTheme = 'dark';
+            }
+
+            // Calculate totals for existing rows (important if values were saved) and update the title
+            updateGrandTotal();
+
+            // Focus on first input
+            const firstInput = document.querySelector('.start-input');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        };
+    </script>
+</body>
+</html>
